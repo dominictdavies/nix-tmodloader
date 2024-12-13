@@ -15,7 +15,7 @@ in
 
       dataDir = mkOption {
         type = types.str;
-        default = "/lib/var/tmodloader";
+        default = "/var/lib/tmodloader";
         description = "Data directory where worlds and sockets go";
       };
 
@@ -268,10 +268,7 @@ in
             User = "tmodloader";
             Group = "tmodloader";
             UMask = 007;
-            WorkingDirectory = "${cfg.dataDir}/${name}";
-
             GuessMainPID = true;
-
             Type = "forking";
 
             ExecStop = "${stopScript} $MAINPID";
