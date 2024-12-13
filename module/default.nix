@@ -107,13 +107,13 @@ in
             };
 
             announcementboxrange = mkOption {
-              type = types.nullOr types.int.s32;
+              type = types.nullOr types.ints.s32;
               default = null;
               description = "Sets the announcement box text messaging range in pixels, -1 for serverwide announcements.";
             };
 
             seed = mkOption {
-              type = types.nullOr types.int.u32;
+              type = types.nullOr types.ints.u32;
               default = null;
               description = "Specifies the world seed when using -autocreate";
             };
@@ -131,7 +131,7 @@ in
             # };
 
             install = mkOption {
-              type = types.listOf types.int.u32;
+              type = types.listOf types.ints.u32;
               default = [];
               description = ''
                 List of workshop ids to install
