@@ -69,7 +69,7 @@ in
               description = ''
                 The path to the world file (`.wld`) which should be loaded.
                 If no world exists at this path, one will be created with the size
-                specified by `autoCreatedWorldSize
+                specified by `autocreate`
               '';
             };
 
@@ -187,7 +187,7 @@ in
           (valFlag "players" conf.players)
           (valFlag "password" conf.password)
           (valFlag "world" conf.world)
-          (valFlag "autocreate" (builtins.getAttr conf.autocreatedworldsize worldSizeMap))
+          (valFlag "autocreate" (builtins.getAttr conf.autocreate worldSizeMap))
           (valFlag "banlist" conf.banlist)
           (boolFlag "secure" conf.secure)
           (boolFlag "noupnp" conf.noupnp)
