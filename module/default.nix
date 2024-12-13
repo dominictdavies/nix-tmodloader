@@ -89,19 +89,19 @@ in
             };
 
             secure = mkOption {
-              type = types.boolean;
+              type = types.bool;
               default = false;
               description = "Adds addition cheat protection to the server";
             };
 
             noupnp = mkOption {
-              type = types.boolean;
+              type = types.bool;
               default = false;
               description = "Disables automatic port forwarding";
             };
 
             disableannouncementbox = mkOption {
-              type = types.boolean;
+              type = types.bool;
               default = false;
               description = "Disables the text announcements Announcement Box makes when pulsed from wire";
             };
