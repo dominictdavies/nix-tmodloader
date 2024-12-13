@@ -27,11 +27,19 @@ stdenv.mkDerivation {
     mkdir -p $out/bin
     mv * $out
 
-    cat > $out/bin/terraria-server << EOF
+    cat > $out/bin/tmodloader-server << EOF
     #!/bin/sh 
     exec ${lib.getExe dotnet-sdk_8} $out/tModLoader.dll -server \$@
     EOF
 
-    chmod +x $out/bin/terraria-server
+    chmod +x $out/bin/tmodloader-server
   '';
+
+  meta = with lib; {
+    homepage = "https://www.tmodloader.net";
+    description = "Dedicated server for tModLoader, a modded version of Terraria";
+    platforms = [ "x86_64-linux" ];
+    license = licenses.mit;
+    mainProgram = "tmodloader-server";
+  };
 }
