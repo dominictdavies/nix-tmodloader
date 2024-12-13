@@ -187,7 +187,7 @@ in
           (valFlag "players" conf.players)
           (valFlag "password" conf.password)
           (valFlag "world" conf.world)
-          (valFlag "autocreate" (builtins.getAttr conf.autoCreatedWorldSize worldSizeMap))
+          (valFlag "autocreate" (builtins.getAttr conf.autocreatedworldsize worldSizeMap))
           (valFlag "banlist" conf.banlist)
           (boolFlag "secure" conf.secure)
           (boolFlag "noupnp" conf.noupnp)
