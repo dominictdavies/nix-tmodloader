@@ -8,6 +8,6 @@
   {
     overlay = final: prev: { tmodloader-server = final.callPackage ./pkgs/default.nix {}; };
     overlays.default = self.overlay;
-    nixosModules.default = import ./modules/tmodloader-server;
+    nixosModules.tmodloader = import ./modules/tmodloader-server;
   };
 }
