@@ -177,7 +177,6 @@ in
 
       systemd.services = mapAttrs' (name: conf: 
       let
-
         flags = [
           "-nosteam"
           "-tmlsavedirectory ${cfg.dataDir}/${name}"
@@ -200,6 +199,8 @@ in
           # (valFlag "modpath" conf.modpath)
         ];
 
+        tmuxCmd = "${getExe pkgs.tmux} -S ${escapeShellArg cfg.dataDir}/${name}.sock";
+
         stopScript = pkgs.writeShellScript "tmodloader-${name}-stop" ''
           # from: https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/games/terraria.nix
           if ! [ -d "/proc/$1" ]; then;  exit 0;  fi
@@ -221,7 +222,7 @@ in
         '';
 
         attachScript = pkgs.writeShellScript "tmodloader-${name}-attach" ''
-          {getExe pkgs.tmux} -S ''${escapeShellArg cfg.dataDir}/${name}.sock attach
+          ${tmuxCmd} attach
         '';
 
         startScript = pkgs.writeShellScript "tmodloader-${name}-start" ''
@@ -234,6 +235,7 @@ in
           echo ${concatStringsSep "\n" conf.install} > ${cfg.dataDir}/${name}/Mods/install.txt
       
           # install mods with manage-tModLoaderServer.sh
+          echo updating mods!!!!
           sh ${conf.package}/DedicatedServerUtils/manage-tModLoaderServer.sh install-mods -f ${escapeShellArg cfg.dataDir}/${name}
 
           # make enabled.json
@@ -249,7 +251,7 @@ in
             > ${escapeShellArg cfg.dataDir}/${name}/Mods/enabled.json
 
           # start server with arguments
-          ${getExe pkgs.tmux} -S ${escapeShellArg cfg.dataDir}/${name}.sock ${getExe conf.package} ${concatStringsSep " " flags}";
+          ${tmuxCmd} ${getExe conf.package} ${concatStringsSep " " flags}";
         '';
         
       in
