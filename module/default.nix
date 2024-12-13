@@ -231,7 +231,7 @@ in
         
           # make install.txt
           mkdir -p ${cfg.dataDir}/${name}/Mods
-          echo ${concatStringSep "\n" conf.install} > ${cfg.dataDir}/${name}/Mods/install.txt
+          echo ${concatStringsSep "\n" conf.install} > ${cfg.dataDir}/${name}/Mods/install.txt
       
           # install mods with manage-tModLoaderServer.sh
           sh ${conf.package}/DedicatedServerUtils/manage-tModLoaderServer.sh install-mods -f ${escapeShellArg cfg.dataDir}/${name}
