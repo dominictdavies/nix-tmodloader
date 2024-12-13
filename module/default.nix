@@ -155,9 +155,9 @@ in
           group = "tmodloader";
           home = cfg.dataDir;
           createHome = true;
-          uid = config.ids.uids.tmodloader;
+          uid = config.ids.uids.terraria;
         };
-        groups.tmodloader.gid = config.ids.gids.tmodloader;
+        groups.tmodloader.gid = config.ids.gids.terraria;
       };
 
       networking.firewall =
