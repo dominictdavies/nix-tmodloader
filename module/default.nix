@@ -203,7 +203,7 @@ in
 
         stopScript = pkgs.writeShellScript "tmodloader-${name}-stop" ''
           # from: https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/games/terraria.nix
-          if ! [ -d "/proc/$1" ]; then;  exit 0;  fi
+          if ! [ -d "/proc/$1" ]; then exit 0; fi
 
           lastline=$(${tmuxCmd} capture-pane -p | grep . | tail -n1)
 
