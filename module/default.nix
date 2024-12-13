@@ -251,7 +251,7 @@ in
             > ${escapeShellArg cfg.dataDir}/${name}/Mods/enabled.json
 
           # start server with arguments
-          ${tmuxCmd} ${getExe conf.package} ${concatStringsSep " " flags}";
+          ${tmuxCmd} ${getExe conf.package} ${concatStringsSep " " flags}
         '';
         
       in
