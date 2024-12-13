@@ -268,7 +268,7 @@ in
             User = "tmodloader";
             Group = "tmodloader";
             UMask = 007;
-            WorkingDirectory = "${cfd.dataDir}/${name}";
+            WorkingDirectory = "${cfg.dataDir}/${name}";
 
             GuessMainPID = true;
 
