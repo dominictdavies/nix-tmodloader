@@ -147,8 +147,20 @@ in
   config = mkIf cfg.enable (
     let
       servers = filterAttrs (_: cfg: cfg.enable) cfg.servers;
+
+      ports = mapAttrsToList (name: conf: conf.port)
+        (filterAttrs (_: cfg: cfg.openFirewall) servers);
+
+      counts = map (port: count (x: x == port) ports) (unique ports);
     in
     {
+      assertions = [
+        {
+          assertion = all(x: x == 1) counts;
+          message = "Two or more servers have conflicting ports";
+        }
+      ];
+    
       users = {
         users.tmodloader = {
           description = "tModLoader server service user";
@@ -160,15 +172,8 @@ in
         groups.tmodloader.gid = config.ids.gids.terraria;
       };
 
-      networking.firewall =
-        let
-          toOpen = filterAttrs (_: cfg: cfg.openFirewall) servers;
-          ports = map (a: a.port) toOpen;
-        in
-        {
-          allowedUDPPorts = ports;
-          allowedTCPPorts = ports;
-        };
+      networking.firewall.allowedUDPPorts = ports;
+      networking.firewall.allowedTCPPorts = ports;
 
       systemd.services = mapAttrs' (name: conf: 
       let
