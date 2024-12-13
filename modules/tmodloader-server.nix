@@ -175,8 +175,8 @@ in
 
         flags = [
           "-nosteam"
-          "-tmlsavedirectory ${cfg.dataDir}/$name"
-          "-steamworkshopfolder ${cfg.dataDir}/$name/steamapps/workshop"
+          "-tmlsavedirectory ${cfg.dataDir}/${name}"
+          "-steamworkshopfolder ${cfg.dataDir}/${name}/steamapps/workshop"
 
           (valFlag "port" conf.port)
           (valFlag "players" conf.players)
@@ -216,7 +216,7 @@ in
         '';
 
         attachScript = pkgs.writeShellScript "tmodloader-${name}-attach" ''
-          {getExe pkgs.tmux} -S ''${escapeShellArg cfg.dataDir}/$name.sock attach
+          {getExe pkgs.tmux} -S ''${escapeShellArg cfg.dataDir}/${name}.sock attach
         '';
 
         startScript = pkgs.writeShellScript "tmodloader-${name}-start" ''
@@ -225,11 +225,11 @@ in
           # I don't know how to do this better I'm bad at nix
         
           # make install.txt
-          mkdir -p ${cfg.dataDir}/$name/Mods
-          echo ${concatStringSep "\n" conf.install} > ${cfg.dataDir}/$name/Mods/install.txt
+          mkdir -p ${cfg.dataDir}/${name}/Mods
+          echo ${concatStringSep "\n" conf.install} > ${cfg.dataDir}/${name}/Mods/install.txt
       
           # install mods with manage-tModLoaderServer.sh
-          sh ${conf.package}/DedicatedServerUtils/manage-tModLoaderServer.sh install-mods -f ${escapeShellArg cfg.dataDir}/$name
+          sh ${conf.package}/DedicatedServerUtils/manage-tModLoaderServer.sh install-mods -f ${escapeShellArg cfg.dataDir}/${name}
 
           # make enabled.json
           # first regular expression is to get file paths of all tmods
@@ -237,14 +237,14 @@ in
           # we then remove the last comma and enclose it in a list to make it valid json
           # finally we write to Mods/enabled.json
 
-          find ${escapeShellArg cfg.dataDir}/$name/steamapps -regex ".*tmod" \
+          find ${escapeShellArg cfg.dataDir}/${name}/steamapps -regex ".*tmod" \
             | sed -E 's/.*\/(\w+)\.tmod/"\1",/' \
             | tr -d '\n' \
             | sed -E 's/(.*)./[\1]/' \
-            > ${escapeShellArg cfg.dataDir}/$name/Mods/enabled.json
+            > ${escapeShellArg cfg.dataDir}/${name}/Mods/enabled.json
 
           # start server with arguments
-          ${getExe pkgs.tmux} -S ${escapeShellArg cfg.dataDir}/$name.sock ${getExe conf.package} ${concatStringsSep " " flags}";
+          ${getExe pkgs.tmux} -S ${escapeShellArg cfg.dataDir}/${name}.sock ${getExe conf.package} ${concatStringsSep " " flags}";
         '';
         
       in
