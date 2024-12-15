@@ -1,10 +1,4 @@
-{
-  pkgs ? import <nixpkgs> {},
-  stdenv ? pkgs.stdenv,
-  lib ? pkgs.lib,
-  fetchurl ? pkgs.fetchurl,
-  dotnet-sdk_8 ? pkgs.dotnet-sdk_8
-}:
+{ pkgs, stdenv, lib, fetchurl, dotnet-sdk_8 }:
 let 
   version = "v2024.11.2.0";
   name = "tmodloader-${version}";
@@ -29,10 +23,14 @@ stdenv.mkDerivation {
 
     cat > $out/bin/tmodloader-server << EOF
     #!/bin/sh 
+    cd $out
     exec ${lib.getExe dotnet-sdk_8} $out/tModLoader.dll -server \$@
     EOF
 
     chmod +x $out/bin/tmodloader-server
+
+    # make a place for logging
+    ln -s /tmp $out/tModLoader-Logs 
   '';
 
   meta = with lib; {
