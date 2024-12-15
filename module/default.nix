@@ -203,32 +203,23 @@ in
 
         tmuxCmd = "${getExe pkgs.tmux} -S ${escapeShellArg cfg.dataDir}/${name}.sock";
 
-        attachScript = pkgs.writeShellApplication {
-          name = "tmodloader-${name}-attach";
-          text = "${tmuxCmd} attach";
-        }; 
-
-        coldStartScript = pkgs.writeShellApplication {
-          name = "tmodloader-${name}-cold-start";
+        updateWorkshop = pkgs.writeShellApplication {
+          name = "tmodloader-${name}-update-workshop";
           runtimeInputs = with pkgs; [ steamcmd bash ];
           text = ''
-            # attach script is ${attachScript}
-            # this is here so that we know for sure it's somewhere in nixpkgs
-            # I don't know how to do this better I'm bad at nix
-            echo COLD START, THIS IS NORMALLY RAN IN TMUX AS A SYSTEMD SERVICE
-        
-            # make install.txt
-            echo WRITING INSTALL.txt
-            echo mods: ${concatStringsSep " " conf.install}
-            mkdir -p ${escapeShellArg cfg.dataDir}/${name}/Mods
-            echo ${concatStringsSep "\n" conf.install} > ${escapeShellArg cfg.dataDir}/${name}/Mods/install.txt
-      
+
             # install mods with manage-tModLoaderServer.sh
             echo UPDATING MODS
-            bash ${conf.package}/DedicatedServerUtils/manage-tModLoaderServer.sh \
-              install-mods \
-              -f ${escapeShellArg cfg.dataDir}/${name} \
-              --steamcmdpath ${pkgs.steamcmd}/bin/steamcmd
+            # bash ${conf.package}/DedicatedServerUtils/manage-tModLoaderServer.sh \
+              # install-mods \
+              # -f ${escapeShellArg cfg.dataDir}/${name} \
+              # --steamcmdpath ${pkgs.steamcmd}/bin/steamcmd
+
+            steamcmd +force_install_dir \
+              ${escapeShellArg cfg.dataDir}/${name} \
+              +login anonymous \
+              ${concatStringsSep " " (map (x: "+workshop_download_item 1281930 ${toString x}") conf.install)} \
+              +quit
 
             # make enabled.json
             # first regular expression is to get file paths of all tmods
@@ -243,13 +234,7 @@ in
               | sed -E 's/(.*)./[\1]\n/' \
               > ${escapeShellArg cfg.dataDir}/${name}/Mods/enabled.json
 
-            echo STARTING SERVER
-            echo package: ${conf.package}
-            echo socket: ${cfg.dataDir}/${name}.sock
-            echo flags: ${concatStringsSep " " flags}
-
-
-            ${getExe conf.package} ${concatStringsSep " " flags}
+            
           '';
         };
 
@@ -257,6 +242,9 @@ in
           name = "tmodloader-${name}-stop";
           text = ''
             echo KILLING TMUX
+
+            if ! [ -d "/proc/$1" ]; then exit 0; fi
+
             lastline=$(${tmuxCmd} capture-pane -p | grep . | tail -n1)
 
             # If the service is not configured to auto-start a world, it will show the world selection prompt
@@ -268,8 +256,10 @@ in
             else
               # Otherwise, we send the `exit` command
               echo sending exit keys, will die soon
-              ${tmuxCmd} send-keys Enter exit Enter
+              ${tmuxCmd} send-keys Enter exit Enter exit Enter
             fi
+
+            tail --pid="$1" -f /dev/null
           '';
         };
 
@@ -278,36 +268,28 @@ in
           if [ -f "${cfg.dataDir}/${name}.sock" ]; then rm ${escapeShellArg cfg.dataDir}/${name}.sock; fi;
 
           # if we don't make these permissive beforehand things could break
+          # I'm not actually sure how this would work with two servers writing to these at
+          # a time but that can be tested later :)
           touch /tmp/environment-server.log
           touch /tmp/server.log
           chmod 777 /tmp/environment-server.log
           chmod 777 /tmp/server.log
-        '';
 
-        stopTmux = pkgs.writeShellScript "tmodloader-${name}-stop-tmux" ''
-          # if it's already dead exit
-          ${tmuxCmd} info
-          if [ $? -gt 1 ]; then exit 0; fi
+          # make install.txt
+          mkdir -p ${escapeShellArg cfg.dataDir}/${name}/Mods
+          echo "${concatStringsSep "\\n" (map toString conf.install)}" > ${escapeShellArg cfg.dataDir}/${name}/Mods/install.txt
 
-          # kill it and wait for it to die
-          ${getExe stopScript}
-          ${tmuxCmd} info
-          while [ $? -eq 0 ]
-          do
-            sleep 1
-            ${tmuxCmd} info
-          done
+          ${getExe updateWorkshop}
         '';
 
       in
       {
         name = "tmodloader-server-${name}";
         value = {
-          # enable = conf.enable;
+          enable = conf.enable;
 
           description = "tModLoader Server ${name}";
-          # wantedBy = mkIf conf.autoStart [ "multi-user.target" ];
-          wantedBy = [ "multi-user.target" ];
+          wantedBy = mkIf conf.autoStart [ "multi-user.target" ];
           after = [ "network.target" ];
 
           serviceConfig = {
@@ -316,11 +298,11 @@ in
             Type = "forking";
             GuessMainPID = true;
             UMask = 7;
+
             ExecStartPre = "${startPreScript}";
-            ExecStart = "${tmuxCmd} new -d ${getExe pkgs.bash} ${getExe coldStartScript}";
-            # ExecStart = "${tmuxCmd} new -d ${getExe conf.package} ${concatStringsSep " " flags}";
-            # ExecStart = "${tmuxCmd} new -d ${pkgs.terraria-server}/bin/TerrariaServer -server";
-            ExecStop = "${stopTmux} $MAINPID";
+
+            ExecStart = "${tmuxCmd} new -d ${getExe conf.package} ${concatStringsSep " " flags}";
+            ExecStop = "${getExe stopScript} $MAINPID";
           };
 
         };
