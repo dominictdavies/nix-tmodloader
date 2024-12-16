@@ -19,6 +19,12 @@ in
         description = "Data directory where worlds and sockets go";
       };
 
+      makeAttachScripts = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Add attach scripts to environment.systemPackages";
+      };
+
       servers = mkOption {
         default = { };
         description = "Servers to be created";
@@ -67,19 +73,16 @@ in
               type = types.nullOr types.path;
               default = null;
               description = ''
-                The path to the world file (`.wld`) which should be loaded.
-                If no world exists at this path, one will be created with the size
-                specified by `autocreate`
+                The path to the world file (`.wld`) which should be loaded. If the
+                specified path does not exist, a world will be autocreated with a size
+                specified in -autocreate
               '';
             };
 
             autocreate = mkOption {
               type = types.enum [ "small" "medium" "large" ];
               default = "medium";
-              description = ''
-                Specifies the size of the auto-created world if `worldPath` does not
-                point to an existing world.
-              '';
+              description = "Size to autocreate world with";
             };
 
             banlist = mkOption {
@@ -115,7 +118,11 @@ in
             seed = mkOption {
               type = types.nullOr types.ints.u32;
               default = null;
-              description = "Specifies the world seed when using -autocreate";
+              description = ''
+                Specifies the world seed when using -autocreate. This will only actually work as
+                a fallback for -world, so unless that's specified you'll have to manually set up
+                the world by attaching to the socket
+              '';
             };
 
             # modpack = mkOption {
@@ -133,9 +140,7 @@ in
             install = mkOption {
               type = types.listOf types.ints.u32;
               default = [];
-              description = ''
-                List of workshop ids to install
-              '';
+              description = "List of workshop mod ids to install";
             };
             
           };
@@ -147,11 +152,11 @@ in
   config = mkIf cfg.enable (
     let
       servers = filterAttrs (_: cfg: cfg.enable) cfg.servers;
-
       ports = mapAttrsToList (name: conf: conf.port)
         (filterAttrs (_: cfg: cfg.openFirewall) servers);
 
       counts = map (port: count (x: x == port) ports) (unique ports);
+
     in
     {
       assertions = [
@@ -160,6 +165,13 @@ in
           message = "Two or more servers have conflicting ports";
         }
       ];
+
+      environment.systemPackages = mkIf cfg.makeAttachScripts (
+        mapAttrsToList (name: conf: pkgs.writeShellApplication {
+          name = "tmodloader-${name}-attach";
+          text = "${getExe pkgs.tmux} -S ${escapeShellArg cfg.dataDir}/${name}.sock attach";
+        }) servers
+      );
     
       users.users.terraria = {
         description = "Terraria server service user";
@@ -300,7 +312,6 @@ in
             UMask = 7;
 
             ExecStartPre = "${startPreScript}";
-
             ExecStart = "${tmuxCmd} new -d ${getExe conf.package} ${concatStringsSep " " flags}";
             ExecStop = "${getExe stopScript} $MAINPID";
           };
