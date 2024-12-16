@@ -29,8 +29,8 @@ While I'm not new to nix, I'm relatively new to actually using it beyond just ma
 
 ### TODO
 - [x] optionally add an attach command to environment.systemPackages
-- [ ] actually test it with multiple servers
-- [ ] actually test out all the options beyond just a minimal exapmle
+- [x] actually test it with multiple servers
+- [x] actually test out all the options beyond just a minimal exapmle
 - [ ] somehow run the update script in a forking process. Currently, the update script (all the steamcmd stuff) runs in `ExecStartPre`. This is bad because it means it takes seconds for the service to start. The issue is, I can't seem to get a forking tmux process to stay alive long enough when running anything other than \*just\* the terraria server. If you know what's wrong, please help me. What I've tried that doesn't work:
 
 `${tmuxCmd} -d new ${bash script that first updates and then runs tmodloader}`
