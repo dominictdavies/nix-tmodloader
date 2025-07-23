@@ -12,7 +12,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     inherit url;
-    sha256 = "1qahnnbs87x93icy4695cd63lwk3mqj7176n40x1136baxj5wc1q";
+    sha256 = "sha256-EW8FF1zf3L6s0VX9v27eVi+hJ/wWphyYIw8gQEPfH4Y=";
   };
 
   unpackPhase = "unzip $src";
