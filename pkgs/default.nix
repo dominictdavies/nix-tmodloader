@@ -1,6 +1,6 @@
 { pkgs, stdenv, lib, fetchurl, dotnet-sdk_8 }:
 let 
-  version = "v2025.06.2.0";
+  version = "v2025.05.3.0";
   name = "tmodloader-${version}";
   url = "https://github.com/tModLoader/tModLoader/releases/download/${version}/tModLoader.zip";
 
