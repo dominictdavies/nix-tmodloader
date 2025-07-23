@@ -314,6 +314,8 @@ in
             ExecStartPre = "${startPreScript}";
             ExecStart = "${tmuxCmd} new -d ${getExe conf.package} ${concatStringsSep " " flags}";
             ExecStop = "${getExe stopScript} $MAINPID";
+
+            TimeoutStartSec = "5min";
           };
 
         };
